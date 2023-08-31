@@ -8,17 +8,18 @@ const (
 
 type State int
 
-// Relay states
+// RelayNumber states
 const (
 	OFF State = iota
 	ON
 )
 
-type Relay int
+// RelayNumber
+type RelayNumber int
 
-// Relay numbers
+// RelayNumber numbers
 const (
-	R1 Relay = iota + 1
+	R1 RelayNumber = iota + 1
 	R2
 	R3
 	R4

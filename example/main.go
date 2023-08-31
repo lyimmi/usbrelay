@@ -33,8 +33,8 @@ func main() {
 
 	time.Sleep(1 * time.Second)
 
-	for i := 0; i <= device.NumRelays(); i++ {
-		ch := usbrelay.Relay(i)
+	for i := 0; i <= device.RelayCount(); i++ {
+		ch := usbrelay.RelayNumber(i)
 
 		if err = device.On(ch); err != nil {
 			log.Fatalln(err)
@@ -49,8 +49,8 @@ func main() {
 
 	time.Sleep(1 * time.Second)
 
-	for i := device.NumRelays(); i >= 0; i-- {
-		ch := usbrelay.Relay(i)
+	for i := device.RelayCount(); i >= 0; i-- {
+		ch := usbrelay.RelayNumber(i)
 
 		if err = device.Toggle(ch); err != nil {
 			log.Fatalln(err)
