@@ -1,64 +1,39 @@
 package usbrelay
 
-/*
-#cgo LDFLAGS: -ldl
-#include <dlfcn.h>
-*/
-import "C"
 import (
 	"fmt"
-	"github.com/google/gousb"
+	"github.com/karalabe/hid"
 	"strconv"
 	"strings"
 )
 
 func Enumerate() ([]*Device, error) {
-	// Initialize a new Context.
-	ctx := gousb.NewContext()
-	defer ctx.Close()
 
-	ctx.Debug(0)
-	// Iterate through available Devices, finding all that match a known VID/PID.
-	//vid, pid := gousb.ID(CfgVendorID), gousb.ID(CfgDeviceID)
-	devs, err := ctx.OpenDevices(func(desc *gousb.DeviceDesc) bool {
-		// this function is called for every device present.
-		// Returning true means the device should be opened.
-		return true
-	})
-	// All returned devices are now open and will need to be closed.
-	for _, d := range devs {
-		defer d.Close()
-	}
-	if err != nil {
-		return nil, fmt.Errorf("OpenDevices(): %v", err)
-	}
-
+	deviceInfos := hid.Enumerate(cfgVendorID, cfgDeviceID)
 	devices := make([]*Device, 0)
 
-	for _, d := range devs {
-		p, _ := d.Product()
+	if len(deviceInfos) <= 0 {
+		return devices, nil
+	}
 
-		if len(p) != len(RelayNamePref)+1 {
+	for _, info := range deviceInfos {
+		if !strings.HasPrefix(info.Product, relayNamePrefix) {
 			continue
 		}
 
-		if !strings.HasPrefix(p, RelayNamePref) {
-			continue
-		}
-
-		numRelaysStr, found := strings.CutPrefix(p, RelayNamePref)
+		numRelaysStr, found := strings.CutPrefix(info.Product, relayNamePrefix)
 		if !found {
 			continue
 		}
 
 		numRelays, err := strconv.Atoi(numRelaysStr)
 		if err != nil {
-
+			return devices, err
 		}
 		if numRelays < 0 || numRelays > 8 {
 			return nil, fmt.Errorf("Unknown usbDevice device? num relays=%d\n", numRelays)
 		}
-		devices = append(devices, NewDevice(int16(d.Desc.Vendor), int16(d.Desc.Product), uint8(numRelays)))
+		devices = append(devices, newDevice(&info, numRelays))
 	}
 
 	return devices, nil

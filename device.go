@@ -2,109 +2,150 @@ package usbrelay
 
 import (
 	"fmt"
-	"github.com/google/gousb"
+	"github.com/karalabe/hid"
+	"runtime"
 	"sync"
 )
 
-func NewDevice(vID int16, pID int16, numRelays uint8) *Device {
+type Device struct {
+	vID        int16
+	pID        int16
+	mu         *sync.Mutex
+	numRelays  Relay
+	state      map[Relay]State
+	deviceInfo *hid.DeviceInfo
+	device     *hid.Device
+}
+
+func newDevice(info *hid.DeviceInfo, numRelays int) *Device {
 	d := &Device{
-		vID:       vID,
-		pID:       pID,
-		mu:        &sync.Mutex{},
-		numRelays: numRelays,
+		deviceInfo: info,
+		mu:         &sync.Mutex{},
+		numRelays:  Relay(numRelays),
 	}
-	d.state = make(map[int]bool)
-	for i := 0; i < int(numRelays); i++ {
-		d.state[i] = false
+	d.state = make(map[Relay]State)
+	for i := 0; i < numRelays; i++ {
+		d.state[Relay(i+1)] = OFF
 	}
 	return d
 }
 
-type Device struct {
-	vID       int16
-	pID       int16
-	mu        *sync.Mutex
-	numRelays uint8
-	state     map[int]bool
+func (d *Device) Open(readState bool) (err error) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	d.device, err = d.deviceInfo.Open()
+	if err != nil {
+		return
+	}
+
+	if readState {
+		_, err = d.getStatus()
+	}
+	return
 }
 
-func (d *Device) onOff(state bool, i int) error {
-	if i < 0 || i > int(d.numRelays) {
-		return fmt.Errorf("invalid usbDevice number. Must be 0-%d or -1 fro all)", i)
-	}
-	ctx := gousb.NewContext()
-
-	dev, err := ctx.OpenDeviceWithVIDPID(gousb.ID(d.vID), gousb.ID(d.pID))
+func (d *Device) Close() error {
+	return d.device.Close()
+}
+func (d *Device) getStatus() (map[Relay]State, error) {
+	buf := make([]byte, 9)
+	_, err := d.device.GetFeatureReport(buf)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer ctx.Close()
 
-	dev.SetAutoDetach(true)
+	// Remove HID report ID on Windows, others OSes don't need it.
+	if runtime.GOOS == "windows" {
+		buf = buf[1:]
+	}
 
-	cmdBuffer := make([]byte, 10)
-	if state {
-		cmdBuffer[0] = 0xFF
+	resMap := make(map[Relay]State)
+	var (
+		state State
+		relay Relay
+	)
+	for i := 0; i < len(d.state); i++ {
+		state = State(buf[8] >> i & 0x01)
+		relay = Relay(i + 1)
+		d.state[relay] = state
+		resMap[relay] = state
+	}
+
+	return resMap, err
+}
+
+func (d *Device) GetStatus() (map[Relay]State, error) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	return d.getStatus()
+}
+
+func (d *Device) onOff(s State, ch Relay) error {
+	if (ch < 0 || ch > d.numRelays) && ch != R_ALL {
+		return fmt.Errorf("invalid channel number. Must be 1-%d)", R_ALL-1)
+	}
+
+	if s == d.state[ch] {
+		return nil
+	}
+
+	cmdBuffer := make([]byte, 9)
+	cmdBuffer[0] = 0x0
+	if ch == R_ALL {
+		if s == ON {
+			cmdBuffer[1] = 0xFE
+		} else {
+			cmdBuffer[1] = 0xFC
+		}
 	} else {
-		cmdBuffer[0] = 0xFD
+		if s == ON {
+			cmdBuffer[1] = 0xFF
+		} else {
+			cmdBuffer[1] = 0xFD
+		}
+		cmdBuffer[2] = byte(ch)
 	}
-	cmdBuffer[1] = uint8(i)
+	d.state[ch] = s
 
-	_, err = setReport(dev, cmdBuffer)
-
+	_, err := d.device.SendFeatureReport(cmdBuffer)
 	return err
 }
 
-func (d *Device) Toggle(i int) error {
+func (d *Device) Toggle(ch Relay) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	if i < 0 || i > int(d.numRelays) {
-		return fmt.Errorf("invalid usbDevice number. Must be 0-%d or -1 fro all)", i)
+	s := d.state[ch]
+	switch s {
+	case ON:
+		s = OFF
+		break
+	case OFF:
+		s = ON
+		break
 	}
 
-	return d.onOff(!d.state[i], i)
+	return d.onOff(s, ch)
 }
 
-func (d *Device) On(i int) error {
+func (d *Device) On(ch Relay) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	return d.onOff(true, i)
+	return d.onOff(ON, ch)
 }
 
-func (d *Device) Off(i int) error {
+func (d *Device) Off(ch Relay) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	return d.onOff(false, i)
+	return d.onOff(OFF, ch)
 }
 
 func (d *Device) NumRelays() int {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	return int(d.numRelays)
-}
-
-func setReport(dev *gousb.Device, buffer []byte) (int, error) {
-	return dev.Control(
-		USB_TYPE_CLASS|USB_RECIP_DEVICE|USB_ENDPOINT_OUT,
-		USBRQ_HID_SET_REPORT,
-		USB_HID_REPORT_TYPE_FEATURE<<8|(0&0xff),
-		0,
-		buffer,
-	)
-}
-
-func readStatus(dev *gousb.Device) (uint8, error) {
-	buff := make([]byte, 10)
-
-	_, err := dev.Control(
-		USB_TYPE_CLASS|USB_RECIP_DEVICE|USB_ENDPOINT_IN,
-		USBRQ_HID_SET_REPORT,
-		USB_HID_REPORT_TYPE_FEATURE<<8|0,
-		0,
-		buff,
-	)
-	return buff[8], err
 }
