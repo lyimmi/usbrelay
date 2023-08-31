@@ -6,18 +6,21 @@ const (
 	relayNamePrefix        = "USBRelay"
 )
 
+// State represents a relay's state ON or OFF
 type State int
 
-// RelayNumber states
+// Available relay State(s)
 const (
 	OFF State = iota
 	ON
 )
 
-// RelayNumber
+// RelayNumber is the relay's identifier on the device
+//
+// Valid identifier can be found by calling Device.RelayCount
 type RelayNumber int
 
-// RelayNumber numbers
+// Available RelayNumber(s)
 const (
 	R1 RelayNumber = iota + 1
 	R2

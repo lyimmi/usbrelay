@@ -7,6 +7,7 @@ import (
 	"sync"
 )
 
+// SerialNumber is the device's unique identifier
 type SerialNumber string
 
 // NewSerialNumber returns an array of characters with the length of 5
@@ -18,22 +19,20 @@ func NewSerialNumber(s string) SerialNumber {
 
 // Device represents a USB HID relay device
 type Device struct {
-	vID          int16
-	pID          int16
 	mu           *sync.Mutex
-	numRelays    int
-	state        map[RelayNumber]State
-	deviceInfo   *hid.DeviceInfo
+	connected    bool
+	relayCount   int
 	device       *hid.Device
+	deviceInfo   *hid.DeviceInfo
 	serialNumber SerialNumber
-	isOpen       bool
+	state        map[RelayNumber]State
 }
 
 func newDevice(info *hid.DeviceInfo, relayCount int) *Device {
 	d := &Device{
 		deviceInfo: info,
 		mu:         &sync.Mutex{},
-		numRelays:  relayCount,
+		relayCount: relayCount,
 	}
 	d.state = make(map[RelayNumber]State, relayCount)
 	for i := 0; i < relayCount; i++ {
@@ -47,7 +46,7 @@ func (d *Device) Open(readState bool) (err error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	d.isOpen = true
+	d.connected = true
 
 	d.device, err = d.deviceInfo.Open()
 	if err != nil {
@@ -62,7 +61,7 @@ func (d *Device) Open(readState bool) (err error) {
 
 // Close closes the USB connection to the device
 func (d *Device) Close() error {
-	d.isOpen = false
+	d.connected = false
 	return d.device.Close()
 }
 
@@ -96,7 +95,7 @@ func (d *Device) readStates() (map[RelayNumber]State, error) {
 
 // changeState changes the state of one or all of the relays on the device
 func (d *Device) changeState(s State, ch RelayNumber) error {
-	if (ch < 0 || int(ch) > d.numRelays) && ch != R_ALL {
+	if (ch < 0 || int(ch) > d.relayCount) && ch != R_ALL {
 		return fmt.Errorf("%w must be 1-%d", ErrInvalidRelayNumber, R_ALL-1)
 	}
 
@@ -130,7 +129,7 @@ func (d *Device) changeState(s State, ch RelayNumber) error {
 	}
 
 	if ch == R_ALL {
-		for i := 0; i < d.numRelays; i++ {
+		for i := 0; i < d.relayCount; i++ {
 			if states[RelayNumber(i)] != d.state[RelayNumber(i)] {
 				return fmt.Errorf("%w relay: %d state: %d", ErrRelayStateNotSet, i, s)
 			}
@@ -147,7 +146,7 @@ func (d *Device) States() (map[RelayNumber]State, error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	if !d.isOpen {
+	if !d.connected {
 		return nil, ErrDeviceNotConnected
 	}
 
@@ -159,7 +158,7 @@ func (d *Device) Toggle(ch RelayNumber) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	if !d.isOpen {
+	if !d.connected {
 		return ErrDeviceNotConnected
 	}
 
@@ -181,7 +180,7 @@ func (d *Device) On(ch RelayNumber) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	if !d.isOpen {
+	if !d.connected {
 		return ErrDeviceNotConnected
 	}
 
@@ -193,7 +192,7 @@ func (d *Device) Off(ch RelayNumber) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	if !d.isOpen {
+	if !d.connected {
 		return ErrDeviceNotConnected
 	}
 
@@ -205,11 +204,7 @@ func (d *Device) RelayCount() (int, error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	if !d.isOpen {
-		return 0, ErrDeviceNotConnected
-	}
-
-	return d.numRelays, nil
+	return d.relayCount, nil
 }
 
 // SetSerialNumber writes the serial number on the device
@@ -217,7 +212,7 @@ func (d *Device) SetSerialNumber(sn SerialNumber) (err error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	if !d.isOpen {
+	if !d.connected {
 		return ErrDeviceNotConnected
 	}
 
@@ -245,7 +240,7 @@ func (d *Device) GetSerialNumber() (sn SerialNumber, err error) {
 		return d.serialNumber, nil
 	}
 
-	if !d.isOpen {
+	if !d.connected {
 		return "", ErrDeviceNotConnected
 	}
 
