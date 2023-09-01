@@ -1,6 +1,6 @@
 # usbrelay
 
-A package for controlling USB relay boards with HID API in go, currently capable of controlling any number of channel on a relay boards.
+A package for controlling USB relay boards with HID API in go, capable of controlling any number of channels on a relay board.
 
 **This package is work in progress, the public interface and behavior may change.**
 
