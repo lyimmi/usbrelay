@@ -9,17 +9,46 @@ karalabe/hid has a simple interface, embeds `libusb` that makes this package `go
 
 ## Usage
 
-```shell
-go get -u github.com/lyimmi/usbrelay
-```
-
 ### Requirements
 
 This package requires CGO to be built.
 
-### Examples
+### As a command line tool:
 
-Simple example:
+Use `go install` to simply install the tool without cloning it.
+
+```shell
+$ go install github.com/lyimmi/usbrelay/cmd/usbrelay@latest
+```
+```shell
+$ usbrelay
+```
+
+#### Command line usage:
+
+```text
+usage: usbrelay <command> [<args>]
+
+- Serial numbers are case sensitive.
+- Use "all" as a relay number to set all relays at once.
+
+Available commands:
+
+   Command   Params             Description
+   list                         List all available devices (add -s flag to print a simplified output)
+   on        <serial> <relay>   Set a relay's state to ON
+   off       <serial> <relay>   Set a relay's state to OFF
+   toggle    <serial> <relay>   Toggle a relay's state
+   setudev                      Set a udev rule to enable running without sudo (linux only - requires root)
+```
+
+### As a package:
+
+```shell
+go get -u github.com/lyimmi/usbrelay
+```
+
+### Examples
 
 ```golang
 import (
@@ -47,7 +76,6 @@ A more detailed example can be found in the [example directory](https://github.c
 On linux USB access needs root permissions by default. If you don't want to run your code as root, it can be done via 
 udev rules:
 
-TLDR:
 1. Create a rule file: 
    - `/etc/udev/rules.d/xx-my-rule.rules`
    - xx is any number > 50 (the defaults are in 50, and higher numbers take priority)

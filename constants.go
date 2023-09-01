@@ -1,8 +1,10 @@
 package usbrelay
 
 const (
-	cfgVendorID     uint16 = 0x16c0
-	cfgDeviceID     uint16 = 0x05DF
+	DeviceVendorID  uint16 = 0x16c0
+	DeviceProductID uint16 = 0x05DF
+	UdevVendorID    string = "16c0"
+	UdevProductID   string = "05df"
 	relayNamePrefix        = "USBRelay"
 )
 

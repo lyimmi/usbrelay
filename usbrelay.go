@@ -8,7 +8,7 @@ import (
 )
 
 func Enumerate() ([]*Device, error) {
-	deviceInfos := hid.Enumerate(cfgVendorID, cfgDeviceID)
+	deviceInfos := hid.Enumerate(DeviceVendorID, DeviceProductID)
 	devices := make([]*Device, 0)
 
 	if len(deviceInfos) <= 0 {
@@ -54,6 +54,10 @@ func Enumerate() ([]*Device, error) {
 
 	for _, device := range devices {
 		device.Close()
+	}
+
+	if len(devices) <= 0 {
+		return devices, ErrNoDeviceFound
 	}
 
 	return devices, err
