@@ -46,12 +46,12 @@ func (d *Device) Open(readState bool) (err error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	d.connected = true
-
 	d.device, err = d.deviceInfo.Open()
 	if err != nil {
 		return
 	}
+
+ d.connected = true
 
 	if readState {
 		_, err = d.readStates()
