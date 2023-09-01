@@ -3,8 +3,10 @@ package usbrelay
 import (
 	"fmt"
 	"github.com/karalabe/hid"
+	"math"
 	"runtime"
 	"sync"
+	"unicode"
 )
 
 // SerialNumber is the device's unique identifier
@@ -12,7 +14,10 @@ type SerialNumber string
 
 // NewSerialNumber returns an array of characters with the length of 5
 func NewSerialNumber(s string) SerialNumber {
-	return SerialNumber(s[:5])
+	snLen := int(math.Min(5, float64(len(s))))
+	newSerial := make([]byte, 5)
+	copy(newSerial, s[:snLen])
+	return SerialNumber(newSerial)
 }
 
 // Device represents a USB HID relay device
@@ -171,16 +176,6 @@ func (d *Device) Toggle(ch RelayNumber) error {
 	return d.changeState(s, ch)
 }
 
-func switchState(s State) State {
-	switch s {
-	case ON:
-		return OFF
-	case OFF:
-		return ON
-	}
-	return OFF
-}
-
 // On sets one or all of the relays state on the device to ON
 func (d *Device) On(ch RelayNumber) error {
 	d.mu.Lock()
@@ -223,9 +218,13 @@ func (d *Device) SetSerialNumber(sn SerialNumber) (err error) {
 	}
 
 	if len(sn) > 5 {
-		err = fmt.Errorf("%w %s is large than 5 bytes", ErrInvalidSerialNumberLen, sn)
-		return
+		return fmt.Errorf("%w %s is longer than 5 characters", ErrInvalidSerialNumber, sn)
 	}
+
+	if !isASCII(string(sn)) {
+		return fmt.Errorf("%w %s is longer than 5 characters", ErrInvalidSerialNumber, sn)
+	}
+
 	cmd := make([]byte, 9)
 	cmd[0] = 0x00
 	cmd[1] = 0xFA
@@ -275,4 +274,23 @@ func (d *Device) String() string {
 	defer d.mu.Unlock()
 
 	return fmt.Sprintf("%s:%d:%d:%d", d.serialNumber, d.relayCount, d.deviceInfo.VendorID, d.deviceInfo.ProductID)
+}
+
+func switchState(s State) State {
+	switch s {
+	case ON:
+		return OFF
+	case OFF:
+		return ON
+	}
+	return OFF
+}
+
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] > unicode.MaxASCII {
+			return false
+		}
+	}
+	return true
 }
