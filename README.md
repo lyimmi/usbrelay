@@ -71,4 +71,4 @@ This package is an amalgamation of a few people's previous work:
 
 ## License
 
-Based on [this article](https://en.wikipedia.org/wiki/Open-source_license) this package is under the [MIT license](https://github.com/lyimmi/usbrelay/blob/main/LICENSE).
+Based on [this article](https://en.wikipedia.org/wiki/Open-source_license#Types) this package is under the [MIT license](https://github.com/lyimmi/usbrelay/blob/main/LICENSE).
