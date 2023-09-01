@@ -12,9 +12,7 @@ type SerialNumber string
 
 // NewSerialNumber returns an array of characters with the length of 5
 func NewSerialNumber(s string) SerialNumber {
-	var sn []byte
-	copy(sn, s[:5])
-	return SerialNumber(sn)
+	return SerialNumber(s[:5])
 }
 
 // Device represents a USB HID relay device
@@ -96,11 +94,7 @@ func (d *Device) readStates() (map[RelayNumber]State, error) {
 // changeState changes the state of one or all of the relays on the device
 func (d *Device) changeState(s State, ch RelayNumber) error {
 	if (ch < 0 || ch > d.relayCount) && ch != R_ALL {
-		return fmt.Errorf("%w must be 1-%d", ErrInvalidRelayNumber, R_ALL-1)
-	}
-
-	if s == d.state[ch] {
-		return nil
+		return fmt.Errorf("%w must be 1-%d", ErrInvalidRelayNumber, d.relayCount)
 	}
 
 	cmdBuffer := make([]byte, 9)
@@ -253,4 +247,20 @@ func (d *Device) GetSerialNumber() (sn SerialNumber, err error) {
 	sn = SerialNumber(buf[:5])
 	d.serialNumber = sn
 	return
+}
+
+// Info returns the basic information about the device as a tuple
+func (d *Device) Info() (serialNumber SerialNumber, vendorID int, productID int, relayCount int) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	return d.serialNumber, int(d.deviceInfo.VendorID), int(d.deviceInfo.ProductID), int(d.relayCount)
+}
+
+// String returns the basic information about the device as a string
+func (d *Device) String() string {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	return fmt.Sprintf("%s:%d:%d:%d", d.serialNumber, d.relayCount, d.deviceInfo.VendorID, d.deviceInfo.ProductID)
 }
