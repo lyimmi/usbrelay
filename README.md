@@ -48,8 +48,6 @@ A more detailed example can be found in the [example directory](https://github.c
 On linux USB access needs root permissions by default. If you don't want to run your code as root, it can be done via 
 udev rules:
 
-[udev setting found here](https://askubuntu.com/questions/978552/how-do-i-make-libusb-work-as-non-root)
-
 TLDR:
 1. Create a rule file: 
    - `/etc/udev/rules.d/xx-my-rule.rules`
@@ -61,7 +59,6 @@ TLDR:
 3. Save and run:
    - `sudo udevadm control --reload-rules && sudo udevadm trigger`
 4. Make sure to unplug and replug the USB device!
-
 
 ## Credits
 
