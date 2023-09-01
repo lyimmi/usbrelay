@@ -156,17 +156,29 @@ func (d *Device) Toggle(ch RelayNumber) error {
 		return ErrDeviceNotConnected
 	}
 
-	s := d.state[ch]
-	switch s {
-	case ON:
-		s = OFF
-		break
-	case OFF:
-		s = ON
-		break
+	if ch == R_ALL {
+		for i := 1; i <= int(d.relayCount); i++ {
+			r := RelayNumber(i)
+			s := switchState(d.state[r])
+			if err := d.changeState(s, r); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 
+	s := switchState(d.state[ch])
 	return d.changeState(s, ch)
+}
+
+func switchState(s State) State {
+	switch s {
+	case ON:
+		return OFF
+	case OFF:
+		return ON
+	}
+	return OFF
 }
 
 // On sets one or all of the relays state on the device to ON
