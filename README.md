@@ -1,12 +1,11 @@
 # usbrelay
 
-A package for controlling USB relay boards with HID API in go.
-This implementation is capable of controlling 1-12 channel relay boards.
+A package for controlling USB relay boards with HID API in go, currently capable of controlling 1-12 channel relay boards.
 
-**This repository is work in progress, the public interface and behavior may change.**
+**This package is work in progress, the public interface and behavior may change.**
 
-This packages uses [karalabe/hid](https://github.com/karalabe/hid) to access and control the USB device, karalabe/hid 
-has a simple interface, embeds `libusb` and that makes this package `go get`-able.
+The package uses [karalabe/hid](https://github.com/karalabe/hid) to access and control the USB device.
+karalabe/hid has a simple interface, embeds `libusb` that makes this package `go get`-able.
 
 ## Usage
 
