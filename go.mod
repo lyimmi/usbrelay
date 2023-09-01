@@ -1,4 +1,4 @@
-module usbrelay
+module github.com/lyimmi/usbrelay
 
 go 1.18
 
