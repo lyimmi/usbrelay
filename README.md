@@ -51,12 +51,16 @@ udev rules:
 [udev setting found here](https://askubuntu.com/questions/978552/how-do-i-make-libusb-work-as-non-root)
 
 TLDR:
-1. Create a file etc/udev/rules.d/xx-my-rule.rules
+1. Create a rule file: 
+   - `/etc/udev/rules.d/xx-my-rule.rules`
    - xx is any number > 50 (the defaults are in 50, and higher numbers take priority)
    - my-rule is whatever you want to call it 
    - must end in .rules
-2. Copy this line in the file `SUBSYSTEM=="usb", ATTRS{idVendor}=="VID", ATTRS{idProduct}=="PID", TAG+="uaccess"`
-3. Save and run `udevadm control --reload-rules`
+2. Insert the following rule:
+   - `SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05df", TAG+="uaccess"`
+3. Save and run:
+   - `sudo udevadm control --reload-rules && sudo udevadm trigger`
+4. Make sure to unplug and replug the USB device!
 
 
 ## Credits
