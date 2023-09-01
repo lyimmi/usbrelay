@@ -15,6 +15,8 @@ func main() {
 
 	device := devices[0]
 
+	log.Println(device.GetSerialNumber())
+
 	err = device.Open(true)
 	if err != nil {
 		log.Fatal(err)
@@ -25,38 +27,38 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(500 * time.Millisecond)
 
 	if err = device.Off(usbrelay.R_ALL); err != nil {
 		log.Fatalln(err)
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(500 * time.Millisecond)
 
-	for i := 0; i <= device.RelayCount(); i++ {
+	for i := 1; i <= device.RelayCount(); i++ {
 		ch := usbrelay.RelayNumber(i)
 
 		if err = device.On(ch); err != nil {
 			log.Fatalln(err)
 		}
 
-		time.Sleep(150 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 
 		if err := device.Off(ch); err != nil {
 			log.Fatalln(err)
 		}
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(500 * time.Millisecond)
 
-	for i := device.RelayCount(); i >= 0; i-- {
+	for i := device.RelayCount(); i > 0; i-- {
 		ch := usbrelay.RelayNumber(i)
 
 		if err = device.Toggle(ch); err != nil {
 			log.Fatalln(err)
 		}
 
-		time.Sleep(150 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 
 		if err := device.Toggle(ch); err != nil {
 			log.Fatalln(err)

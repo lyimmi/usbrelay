@@ -21,7 +21,7 @@ func NewSerialNumber(s string) SerialNumber {
 type Device struct {
 	mu           *sync.Mutex
 	connected    bool
-	relayCount   int
+	relayCount   RelayNumber
 	device       *hid.Device
 	deviceInfo   *hid.DeviceInfo
 	serialNumber SerialNumber
@@ -32,7 +32,7 @@ func newDevice(info *hid.DeviceInfo, relayCount int) *Device {
 	d := &Device{
 		deviceInfo: info,
 		mu:         &sync.Mutex{},
-		relayCount: relayCount,
+		relayCount: RelayNumber(relayCount),
 	}
 	d.state = make(map[RelayNumber]State, relayCount)
 	for i := 0; i < relayCount; i++ {
@@ -51,7 +51,7 @@ func (d *Device) Open(readState bool) (err error) {
 		return
 	}
 
- d.connected = true
+	d.connected = true
 
 	if readState {
 		_, err = d.readStates()
@@ -83,7 +83,7 @@ func (d *Device) readStates() (map[RelayNumber]State, error) {
 		state State
 		relay RelayNumber
 	)
-	for i := 0; i < len(d.state); i++ {
+	for i := 0; i < int(d.relayCount); i++ {
 		state = State(buf[8] >> i & 0x01)
 		relay = RelayNumber(i + 1)
 		d.state[relay] = state
@@ -95,7 +95,7 @@ func (d *Device) readStates() (map[RelayNumber]State, error) {
 
 // changeState changes the state of one or all of the relays on the device
 func (d *Device) changeState(s State, ch RelayNumber) error {
-	if (ch < 0 || int(ch) > d.relayCount) && ch != R_ALL {
+	if (ch < 0 || ch > d.relayCount) && ch != R_ALL {
 		return fmt.Errorf("%w must be 1-%d", ErrInvalidRelayNumber, R_ALL-1)
 	}
 
@@ -129,7 +129,7 @@ func (d *Device) changeState(s State, ch RelayNumber) error {
 	}
 
 	if ch == R_ALL {
-		for i := 0; i < d.relayCount; i++ {
+		for i := 0; i < int(d.relayCount); i++ {
 			if states[RelayNumber(i)] != d.state[RelayNumber(i)] {
 				return fmt.Errorf("%w relay: %d state: %d", ErrRelayStateNotSet, i, s)
 			}
@@ -200,11 +200,11 @@ func (d *Device) Off(ch RelayNumber) error {
 }
 
 // RelayCount returns the number of relays found on the device
-func (d *Device) RelayCount() (int, error) {
+func (d *Device) RelayCount() int {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	return d.relayCount, nil
+	return int(d.relayCount)
 }
 
 // SetSerialNumber writes the serial number on the device
@@ -244,15 +244,13 @@ func (d *Device) GetSerialNumber() (sn SerialNumber, err error) {
 		return "", ErrDeviceNotConnected
 	}
 
-	cmd := make([]byte, 9)
-	_, err = d.device.GetFeatureReport(cmd)
+	buf := make([]byte, 9)
+	_, err = d.device.GetFeatureReport(buf)
 	if err != nil {
 		return
 	}
-	if runtime.GOOS == "windows" {
-		cmd = cmd[1:]
-	}
-	sn = SerialNumber(cmd[:5])
+	buf = buf[1:]
+	sn = SerialNumber(buf[:5])
 	d.serialNumber = sn
 	return
 }
