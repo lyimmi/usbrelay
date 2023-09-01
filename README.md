@@ -37,12 +37,14 @@ usage: usbrelay <command> [<args>]
 
 Available commands:
 
-   Command   Params             Description
-   list                         List all available devices (add -s flag to print a simplified output)
-   on        <serial> <relay>   Set a relay's state to ON
-   off       <serial> <relay>   Set a relay's state to OFF
-   toggle    <serial> <relay>   Toggle a relay's state
-   setudev                      Set a udev rule to enable running without sudo (linux only - requires root)
+   Command     Params                  Description
+   list                                List all available devices (add -s flag to print a simplified output)
+   on          <serial> <relay>        Set a relay's state to ON
+   off         <serial> <relay>        Set a relay's state to OFF
+   toggle      <serial> <relay>        Toggle a relay's state
+   setserial   <serial> <new serial>   Change a device's serial number (max 5 ASCII characters)
+   setudev                             Set a udev rule to enable running without sudo (linux only - requires root)
+
 ```
 
 ### As a package:
