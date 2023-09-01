@@ -36,5 +36,5 @@ const (
 	R10
 	R11
 	R12
-	R_ALL
+	R_ALL = 1000
 )
