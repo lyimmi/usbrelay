@@ -15,16 +15,17 @@ This package requires CGO to be built.
 
 ### As a command line tool:
 
-Use `go install` to simply install the tool without cloning it.
+Simply install the tool without cloning it.
 
 ```shell
-$ go install github.com/lyimmi/usbrelay/cmd/usbrelay@latest
-```
-```shell
-$ usbrelay
+go install github.com/lyimmi/usbrelay/cmd/usbrelay@latest
 ```
 
 #### Command line usage:
+
+```shell
+usbrelay
+```
 
 ```text
 usage: usbrelay <command> [<args>]
