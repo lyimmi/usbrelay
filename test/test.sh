@@ -24,8 +24,7 @@ tests=(
 for (( i = 0; i < ${#tests[@]} ; i++ )); do
     printf 'Running: %s\n' "${commands[$i]}"
 
-
-    if ! ${tests[$i]}>/dev/null 2>/dev/null; then
+    if ! ${tests[$i]}; then
       printf '\Failed: %s\n' "${commands[$i]}"
       exit 1
     fi
