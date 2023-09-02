@@ -1,6 +1,8 @@
 # usbrelay
 
-[![CommandLine](https://github.com/lyimmi/usbrelay/actions/workflows/go-command-line.yml/badge.svg)](https://github.com/lyimmi/usbrelay/actions/workflows/go-command-line.yml) [![Example](https://github.com/lyimmi/usbrelay/actions/workflows/go-example.yml/badge.svg)](https://github.com/lyimmi/usbrelay/actions/workflows/go-example.yml)
+[![CommandLine](https://github.com/lyimmi/usbrelay/actions/workflows/go-command-line.yml/badge.svg)](https://github.com/lyimmi/usbrelay/actions/workflows/go-command-line.yml)
+[![Example](https://github.com/lyimmi/usbrelay/actions/workflows/go-example.yml/badge.svg)](https://github.com/lyimmi/usbrelay/actions/workflows/go-example.yml)
+[![UmockdevTest](https://github.com/lyimmi/usbrelay/actions/workflows/test.yml/badge.svg)](https://github.com/lyimmi/usbrelay/actions/workflows/test.yml)
 
 A package for controlling USB relay boards with HID API in go, capable of controlling any number of channels on a relay board.
 
