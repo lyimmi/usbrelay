@@ -34,7 +34,7 @@ func Enumerate() ([]*Device, error) {
 		if err != nil {
 			return devices, err
 		}
-		if numRelays < 0 || numRelays > 8 {
+		if numRelays < 0 && numRelays != R_ALL {
 			return nil, fmt.Errorf("%w num relays: %d", ErrInvalidNumberOfRelays, numRelays)
 		}
 

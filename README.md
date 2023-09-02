@@ -92,6 +92,16 @@ udev rules:
    - `sudo udevadm control --reload-rules && sudo udevadm trigger`
 4. Make sure to unplug and replug the USB device!
 
+## Testing
+
+Testing is done via a mocked virtual USB device with [umockdev](https://github.com/martinpitt/umockdev).
+
+A 4 channel device was used to record the USB communication with [wireshark](https://www.wireshark.org/) and `usbmon` 
+while executing the command line tool.
+
+Each command's communication is stored in a separate `pcap` file in the test directory and replayed for the command line
+tool with `umockdev-run` using the actual device's stored sysfs device and udev properties.
+
 ## Credits
 
 This package is an amalgamation of a few people's previous work:

@@ -1,0 +1,28 @@
+name: UmockdevTest
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install umockdev
+      run: sudo apt-get update -y && sudo apt-get install -y umockdev
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: Build command line tool
+      run: go build -v -o /tmp/usbrelay cmd/usbrelay/main.go
+
+    - name: Run umockdev tests
+      run: cd test && chmod +x test.sh && ./test.sh
