@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/karalabe/hid"
 	"math"
-	"runtime"
 	"sync"
 	"unicode"
 )
@@ -74,11 +73,6 @@ func (d *Device) readStates() (map[RelayNumber]State, error) {
 	_, err := d.device.GetFeatureReport(buf)
 	if err != nil {
 		return nil, err
-	}
-
-	// Remove HID report ID on Windows, others OSes don't need it.
-	if runtime.GOOS == "windows" {
-		buf = buf[1:]
 	}
 
 	resMap := make(map[RelayNumber]State)
