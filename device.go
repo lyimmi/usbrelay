@@ -92,7 +92,7 @@ func (d *Device) readStates() (map[RelayNumber]State, error) {
 
 // changeState changes the state of one or all of the relays on the device
 func (d *Device) changeState(s State, ch RelayNumber) error {
-	if (ch < 0 || ch > d.relayCount) && ch != R_ALL {
+	if (ch <= 0 || ch > d.relayCount) && ch != R_ALL {
 		return fmt.Errorf("%w must be 1-%d", ErrInvalidRelayNumber, d.relayCount)
 	}
 
