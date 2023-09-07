@@ -59,10 +59,10 @@ func (d *Device) Open(readState bool) (err error) {
 	if d.deviceInfo == nil {
 		return ErrDeviceInfoNotFound
 	}
-	
+
 	d.device, err = d.deviceInfo.Open()
 	if err != nil {
-		return
+		return fmt.Errorf("%w, %w", ErrDeviceOpen, err)
 	}
 
 	d.connected = true
