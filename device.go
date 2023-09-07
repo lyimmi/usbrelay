@@ -30,7 +30,15 @@ type Device struct {
 	state        map[RelayNumber]State
 }
 
-func newDevice(info *hid.DeviceInfo, relayCount int) *Device {
+func newDevice(info *hid.DeviceInfo, relayCount int) (*Device, error) {
+	if info == nil {
+		return nil, ErrDeviceInfoNotFound
+	}
+
+	if relayCount < 1 {
+		return nil, ErrInvalidNumberOfRelays
+	}
+
 	d := &Device{
 		deviceInfo: info,
 		mu:         &sync.Mutex{},
@@ -40,7 +48,7 @@ func newDevice(info *hid.DeviceInfo, relayCount int) *Device {
 	for i := 0; i < relayCount; i++ {
 		d.state[RelayNumber(i+1)] = OFF
 	}
-	return d
+	return d, nil
 }
 
 // Open connects to the USB device
@@ -48,6 +56,10 @@ func (d *Device) Open(readState bool) (err error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
+	if d.deviceInfo == nil {
+		return ErrDeviceInfoNotFound
+	}
+	
 	d.device, err = d.deviceInfo.Open()
 	if err != nil {
 		return

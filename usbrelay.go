@@ -38,7 +38,11 @@ func Enumerate() ([]*Device, error) {
 			return nil, fmt.Errorf("%w num relays: %d", ErrInvalidNumberOfRelays, numRelays)
 		}
 
-		device := newDevice(&info, numRelays)
+		var device *Device
+		device, err = newDevice(&info, numRelays)
+		if err != nil {
+			break
+		}
 		err = device.Open(false)
 		if err != nil {
 			break
@@ -54,6 +58,10 @@ func Enumerate() ([]*Device, error) {
 
 	for _, device := range devices {
 		device.Close()
+	}
+
+	if err != nil {
+		return nil, err
 	}
 
 	if len(devices) <= 0 {
