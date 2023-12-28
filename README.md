@@ -4,12 +4,15 @@
 [![Example](https://github.com/lyimmi/usbrelay/actions/workflows/go-example.yml/badge.svg)](https://github.com/lyimmi/usbrelay/actions/workflows/go-example.yml)
 [![UmockdevTest](https://github.com/lyimmi/usbrelay/actions/workflows/test.yml/badge.svg)](https://github.com/lyimmi/usbrelay/actions/workflows/test.yml)
 
+<img align="right" src="https://github.com/lyimmi/usbrelay/assets/8627125/d26081dd-3dd9-47fc-841f-3d89fbe11b68" width="160" height="160" alt="usb hid relay">
+
 A package for controlling USB relay boards with HID API in go, capable of controlling any number of channels on a relay board.
 
 **This package is work in progress, the public interface and behavior may change.**
 
 The package uses [karalabe/hid](https://github.com/karalabe/hid) to access and control the USB device.
 karalabe/hid has a simple interface, embeds `libusb` that makes this package `go get`-able.
+
 
 ## Usage
 
