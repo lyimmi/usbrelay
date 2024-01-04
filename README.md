@@ -18,7 +18,8 @@ karalabe/hid has a simple interface, embeds `libusb` that makes this package `go
 
 ### Requirements
 
-This package requires CGO to be built.
+This package requires CGO to be built.  
+For Windwos I recommend tmd-gcc: https://jmeubank.github.io/tdm-gcc/download/
 
 ### As a command line tool:
 
